@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Venn Diagram Fun!</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const levels = [
+      // LEVELS 1-10: EASY (No Overlap)
+      {
+        id: 1,
+        title: "Animals vs. Machines",
+        leftLabel: "Animals",
+        rightLabel: "Machines",
+        leftColor: "#22c55e",
+        rightColor: "#3b82f6",
+        items: [
+          { name: "🐕 Dog", correct: "left" },
+          { name: "🚗 Car", correct: "right" },
+          { name: "🐱 Cat", correct: "left" },
+          { name: "🚌 Bus", correct: "right" },
+          { name: "🐰 Rabbit", correct: "left" },
+          { name: "✈️ Plane", correct: "right" },
+        ],
+        hint: "Animals are alive! Machines are built by people."
+      },
+      {
+        id: 2,
+        title: "Fruits vs. Vegetables",
+        leftLabel: "Fruits",
+        rightLabel: "Vegetables",
+        leftColor: "#ec4899",
+        rightColor: "#22c55e",
+        items: [
+          { name: "🍎 Apple", correct: "left" },
+          { name: "🥕 Carrot", correct: "right" },
+          { name: "🍌 Banana", correct: "left" },
+          { name: "🥦 Broccoli", correct: "right" },
+          { name: "🍇 Grapes", correct: "left" },
+          { name: "🥬 Lettuce", correct: "right" },
+        ],
+        hint: "Fruits are usually sweet!"
+      },
+      {
+        id: 3,
+        title: "Land vs. Water Animals",
+        leftLabel: "Land",
+        rightLabel: "Water",
+        leftColor: "#a855f7",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "🦁 Lion", correct: "left" },
+          { name: "🐟 Fish", correct: "right" },
+          { name: "🐘 Elephant", correct: "left" },
+          { name: "🦈 Shark", correct: "right" },
+          { name: "🦒 Giraffe", correct: "left" },
+          { name: "🐙 Octopus", correct: "right" },
+        ],
+        hint: "Where does each animal live?"
+      },
+      {
+        id: 4,
+        title: "Hot vs. Cold",
+        leftLabel: "Hot",
+        rightLabel: "Cold",
+        leftColor: "#ef4444",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "🔥 Fire", correct: "left" },
+          { name: "🧊 Ice", correct: "right" },
+          { name: "☀️ Sun", correct: "left" },
+          { name: "❄️ Snowflake", correct: "right" },
+          { name: "🌋 Volcano", correct: "left" },
+          { name: "🍦 Ice Cream", correct: "right" },
+        ],
+        hint: "Is it warm or chilly?"
+      },
+      {
+        id: 5,
+        title: "Big vs. Small",
+        leftLabel: "Big",
+        rightLabel: "Small",
+        leftColor: "#8b5cf6",
+        rightColor: "#f59e0b",
+        items: [
+          { name: "🐘 Elephant", correct: "left" },
+          { name: "🐜 Ant", correct: "right" },
+          { name: "🏔️ Mountain", correct: "left" },
+          { name: "🍓 Strawberry", correct: "right" },
+          { name: "🐋 Whale", correct: "left" },
+          { name: "🐞 Ladybug", correct: "right" },
+        ],
+        hint: "Compare the sizes!"
+      },
+      {
+        id: 6,
+        title: "Day vs. Night",
+        leftLabel: "Day",
+        rightLabel: "Night",
+        leftColor: "#fbbf24",
+        rightColor: "#6366f1",
+        items: [
+          { name: "☀️ Sun", correct: "left" },
+          { name: "🌙 Moon", correct: "right" },
+          { name: "🌈 Rainbow", correct: "left" },
+          { name: "⭐ Stars", correct: "right" },
+          { name: "🦋 Butterfly", correct: "left" },
+          { name: "🦉 Owl", correct: "right" },
+        ],
+        hint: "When do you see these things?"
+      },
+      {
+        id: 7,
+        title: "Toys vs. Food",
+        leftLabel: "Toys",
+        rightLabel: "Food",
+        leftColor: "#ec4899",
+        rightColor: "#84cc16",
+        items: [
+          { name: "🧸 Teddy Bear", correct: "left" },
+          { name: "🍕 Pizza", correct: "right" },
+          { name: "🎮 Video Game", correct: "left" },
+          { name: "🍔 Burger", correct: "right" },
+          { name: "🪀 Yo-Yo", correct: "left" },
+          { name: "🌮 Taco", correct: "right" },
+        ],
+        hint: "Do you play with it or eat it?"
+      },
+      {
+        id: 8,
+        title: "Clothes vs. Animals",
+        leftLabel: "Clothes",
+        rightLabel: "Animals",
+        leftColor: "#f97316",
+        rightColor: "#22c55e",
+        items: [
+          { name: "👕 Shirt", correct: "left" },
+          { name: "🐶 Dog", correct: "right" },
+          { name: "👖 Pants", correct: "left" },
+          { name: "🐱 Cat", correct: "right" },
+          { name: "🧢 Hat", correct: "left" },
+          { name: "🐦 Bird", correct: "right" },
+        ],
+        hint: "Do you wear it or is it alive?"
+      },
+      {
+        id: 9,
+        title: "Sky vs. Ground",
+        leftLabel: "In the Sky",
+        rightLabel: "On Ground",
+        leftColor: "#3b82f6",
+        rightColor: "#a3734c",
+        items: [
+          { name: "☁️ Cloud", correct: "left" },
+          { name: "🌳 Tree", correct: "right" },
+          { name: "✈️ Airplane", correct: "left" },
+          { name: "🏠 House", correct: "right" },
+          { name: "🌙 Moon", correct: "left" },
+          { name: "🚗 Car", correct: "right" },
+        ],
+        hint: "Look up or look down?"
+      },
+      {
+        id: 10,
+        title: "Sweet vs. Salty",
+        leftLabel: "Sweet",
+        rightLabel: "Salty",
+        leftColor: "#ec4899",
+        rightColor: "#f59e0b",
+        items: [
+          { name: "🍭 Lollipop", correct: "left" },
+          { name: "🥨 Pretzel", correct: "right" },
+          { name: "🍪 Cookie", correct: "left" },
+          { name: "🍟 Fries", correct: "right" },
+          { name: "🍰 Cake", correct: "left" },
+          { name: "🧂 Salt", correct: "right" },
+        ],
+        hint: "How does it taste?"
+      },
+
+      // LEVELS 11-25: MEDIUM (With Overlap)
+      {
+        id: 11,
+        title: "Can Fly vs. Animals",
+        leftLabel: "Can Fly",
+        rightLabel: "Animals",
+        leftColor: "#8b5cf6",
+        rightColor: "#f59e0b",
+        items: [
+          { name: "🦅 Eagle", correct: "both" },
+          { name: "✈️ Airplane", correct: "left" },
+          { name: "🐘 Elephant", correct: "right" },
+          { name: "🦋 Butterfly", correct: "both" },
+          { name: "🚁 Helicopter", correct: "left" },
+          { name: "🐟 Fish", correct: "right" },
+        ],
+        hint: "Some animals can fly! They go in the MIDDLE."
+      },
+      {
+        id: 12,
+        title: "Has Legs vs. Lives in Water",
+        leftLabel: "Has Legs",
+        rightLabel: "Water",
+        leftColor: "#a855f7",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "🐕 Dog", correct: "left" },
+          { name: "🐟 Fish", correct: "right" },
+          { name: "🦀 Crab", correct: "both" },
+          { name: "🐦 Bird", correct: "left" },
+          { name: "🐸 Frog", correct: "both" },
+          { name: "🐋 Whale", correct: "right" },
+        ],
+        hint: "Crabs and frogs have legs AND live in water!"
+      },
+      {
+        id: 13,
+        title: "Red Things vs. Food",
+        leftLabel: "Red",
+        rightLabel: "Food",
+        leftColor: "#ef4444",
+        rightColor: "#84cc16",
+        items: [
+          { name: "🚒 Fire Truck", correct: "left" },
+          { name: "🍞 Bread", correct: "right" },
+          { name: "🍎 Apple", correct: "both" },
+          { name: "❤️ Heart", correct: "left" },
+          { name: "🍓 Strawberry", correct: "both" },
+          { name: "🧀 Cheese", correct: "right" },
+        ],
+        hint: "Apples and strawberries are red AND food!"
+      },
+      {
+        id: 14,
+        title: "Makes Sound vs. Outside",
+        leftLabel: "Makes Sound",
+        rightLabel: "Outside",
+        leftColor: "#6366f1",
+        rightColor: "#10b981",
+        items: [
+          { name: "📺 TV", correct: "left" },
+          { name: "🌸 Flower", correct: "right" },
+          { name: "🐦 Bird", correct: "both" },
+          { name: "🔔 Bell", correct: "left" },
+          { name: "🚗 Car", correct: "both" },
+          { name: "🌳 Tree", correct: "right" },
+        ],
+        hint: "Birds and cars make sounds AND are outside!"
+      },
+      {
+        id: 15,
+        title: "Yellow vs. Hot",
+        leftLabel: "Yellow",
+        rightLabel: "Hot",
+        leftColor: "#eab308",
+        rightColor: "#f97316",
+        items: [
+          { name: "🍋 Lemon", correct: "left" },
+          { name: "🔥 Fire", correct: "right" },
+          { name: "☀️ Sun", correct: "both" },
+          { name: "🍌 Banana", correct: "left" },
+          { name: "⭐ Star", correct: "both" },
+          { name: "🍵 Hot Tea", correct: "right" },
+        ],
+        hint: "The sun and stars are yellow AND hot!"
+      },
+      {
+        id: 16,
+        title: "Round vs. Sports",
+        leftLabel: "Round",
+        rightLabel: "Sports",
+        leftColor: "#64748b",
+        rightColor: "#14b8a6",
+        items: [
+          { name: "🍪 Cookie", correct: "left" },
+          { name: "🏒 Hockey Stick", correct: "right" },
+          { name: "⚽ Soccer Ball", correct: "both" },
+          { name: "🌕 Moon", correct: "left" },
+          { name: "🏀 Basketball", correct: "both" },
+          { name: "🎿 Skis", correct: "right" },
+        ],
+        hint: "Balls are round AND used in sports!"
+      },
+      {
+        id: 17,
+        title: "Green vs. Plants",
+        leftLabel: "Green",
+        rightLabel: "Plants",
+        leftColor: "#22c55e",
+        rightColor: "#84cc16",
+        items: [
+          { name: "🐸 Frog", correct: "left" },
+          { name: "🌷 Tulip", correct: "right" },
+          { name: "🌲 Pine Tree", correct: "both" },
+          { name: "🥒 Cucumber", correct: "both" },
+          { name: "🟢 Green Circle", correct: "left" },
+          { name: "🌻 Sunflower", correct: "right" },
+        ],
+        hint: "Some plants are green!"
+      },
+      {
+        id: 18,
+        title: "Soft vs. Bedroom",
+        leftLabel: "Soft",
+        rightLabel: "Bedroom",
+        leftColor: "#ec4899",
+        rightColor: "#8b5cf6",
+        items: [
+          { name: "☁️ Cloud", correct: "left" },
+          { name: "🪞 Mirror", correct: "right" },
+          { name: "🛏️ Bed", correct: "both" },
+          { name: "🧸 Teddy Bear", correct: "both" },
+          { name: "🪶 Feather", correct: "left" },
+          { name: "💡 Lamp", correct: "right" },
+        ],
+        hint: "Beds and teddy bears are soft AND in bedrooms!"
+      },
+      {
+        id: 19,
+        title: "White vs. Cold",
+        leftLabel: "White",
+        rightLabel: "Cold",
+        leftColor: "#94a3b8",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "📄 Paper", correct: "left" },
+          { name: "🧊 Ice Cube", correct: "right" },
+          { name: "☃️ Snowman", correct: "both" },
+          { name: "🥛 Milk", correct: "left" },
+          { name: "❄️ Snow", correct: "both" },
+          { name: "🍦 Ice Cream", correct: "right" },
+        ],
+        hint: "Snow and snowmen are white AND cold!"
+      },
+      {
+        id: 20,
+        title: "Has Wings vs. Animals",
+        leftLabel: "Has Wings",
+        rightLabel: "Animals",
+        leftColor: "#3b82f6",
+        rightColor: "#f59e0b",
+        items: [
+          { name: "✈️ Airplane", correct: "left" },
+          { name: "🐶 Dog", correct: "right" },
+          { name: "🦜 Parrot", correct: "both" },
+          { name: "🚁 Helicopter", correct: "left" },
+          { name: "🦇 Bat", correct: "both" },
+          { name: "🐱 Cat", correct: "right" },
+        ],
+        hint: "Parrots and bats are animals with wings!"
+      },
+      {
+        id: 21,
+        title: "Blue vs. Ocean Things",
+        leftLabel: "Blue",
+        rightLabel: "Ocean",
+        leftColor: "#3b82f6",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "🧢 Blue Cap", correct: "left" },
+          { name: "🐚 Seashell", correct: "right" },
+          { name: "🐋 Blue Whale", correct: "both" },
+          { name: "💎 Sapphire", correct: "left" },
+          { name: "🌊 Wave", correct: "both" },
+          { name: "🦐 Shrimp", correct: "right" },
+        ],
+        hint: "Blue whales and waves are blue AND in the ocean!"
+      },
+      {
+        id: 22,
+        title: "Has Tail vs. Pets",
+        leftLabel: "Has Tail",
+        rightLabel: "Pets",
+        leftColor: "#a855f7",
+        rightColor: "#ec4899",
+        items: [
+          { name: "🐊 Crocodile", correct: "left" },
+          { name: "🐹 Hamster", correct: "right" },
+          { name: "🐕 Dog", correct: "both" },
+          { name: "🦎 Lizard", correct: "left" },
+          { name: "🐱 Cat", correct: "both" },
+          { name: "🐠 Fish", correct: "right" },
+        ],
+        hint: "Dogs and cats have tails AND are pets!"
+      },
+      {
+        id: 23,
+        title: "Sweet vs. Party Food",
+        leftLabel: "Sweet",
+        rightLabel: "Party",
+        leftColor: "#ec4899",
+        rightColor: "#fbbf24",
+        items: [
+          { name: "🍯 Honey", correct: "left" },
+          { name: "🍕 Pizza", correct: "right" },
+          { name: "🎂 Birthday Cake", correct: "both" },
+          { name: "🍬 Candy", correct: "left" },
+          { name: "🧁 Cupcake", correct: "both" },
+          { name: "🌭 Hot Dog", correct: "right" },
+        ],
+        hint: "Cake and cupcakes are sweet AND at parties!"
+      },
+      {
+        id: 24,
+        title: "Grows vs. Green",
+        leftLabel: "Grows",
+        rightLabel: "Green",
+        leftColor: "#84cc16",
+        rightColor: "#22c55e",
+        items: [
+          { name: "👶 Baby", correct: "left" },
+          { name: "🟢 Green Ball", correct: "right" },
+          { name: "🌱 Sprout", correct: "both" },
+          { name: "🐶 Puppy", correct: "left" },
+          { name: "🥒 Cucumber", correct: "both" },
+          { name: "🐸 Frog", correct: "right" },
+        ],
+        hint: "Sprouts and cucumbers grow AND are green!"
+      },
+      {
+        id: 25,
+        title: "Has Wheels vs. Toys",
+        leftLabel: "Has Wheels",
+        rightLabel: "Toys",
+        leftColor: "#64748b",
+        rightColor: "#f97316",
+        items: [
+          { name: "🚛 Truck", correct: "left" },
+          { name: "🧸 Teddy Bear", correct: "right" },
+          { name: "🛴 Scooter", correct: "both" },
+          { name: "🚂 Train", correct: "left" },
+          { name: "🚲 Bicycle", correct: "both" },
+          { name: "🪁 Kite", correct: "right" },
+        ],
+        hint: "Scooters and bicycles have wheels AND are toys!"
+      },
+
+      // LEVELS 26-40: HARDER
+      {
+        id: 26,
+        title: "Stripes vs. Animals",
+        leftLabel: "Stripes",
+        rightLabel: "Animals",
+        leftColor: "#f97316",
+        rightColor: "#22c55e",
+        items: [
+          { name: "🚧 Traffic Cone", correct: "left" },
+          { name: "🐶 Dog", correct: "right" },
+          { name: "🦓 Zebra", correct: "both" },
+          { name: "👔 Striped Tie", correct: "left" },
+          { name: "🐯 Tiger", correct: "both" },
+          { name: "🐘 Elephant", correct: "right" },
+        ],
+        hint: "Zebras and tigers are striped animals!"
+      },
+      {
+        id: 27,
+        title: "Bounces vs. Toys",
+        leftLabel: "Bounces",
+        rightLabel: "Toys",
+        leftColor: "#8b5cf6",
+        rightColor: "#ec4899",
+        items: [
+          { name: "🏀 Basketball", correct: "both" },
+          { name: "🧸 Stuffed Animal", correct: "right" },
+          { name: "🎾 Tennis Ball", correct: "both" },
+          { name: "🥏 Frisbee", correct: "right" },
+          { name: "🏐 Volleyball", correct: "both" },
+          { name: "🪀 Yo-Yo", correct: "right" },
+        ],
+        hint: "Balls bounce AND are toys!"
+      },
+      {
+        id: 28,
+        title: "Metal vs. Kitchen",
+        leftLabel: "Metal",
+        rightLabel: "Kitchen",
+        leftColor: "#94a3b8",
+        rightColor: "#f97316",
+        items: [
+          { name: "🔩 Screw", correct: "left" },
+          { name: "🥖 Bread", correct: "right" },
+          { name: "🍴 Fork", correct: "both" },
+          { name: "⚙️ Gear", correct: "left" },
+          { name: "🥄 Spoon", correct: "both" },
+          { name: "🧁 Cupcake", correct: "right" },
+        ],
+        hint: "Forks and spoons are metal AND in kitchens!"
+      },
+      {
+        id: 29,
+        title: "Fast vs. Has Engine",
+        leftLabel: "Fast",
+        rightLabel: "Has Engine",
+        leftColor: "#ef4444",
+        rightColor: "#64748b",
+        items: [
+          { name: "🐆 Cheetah", correct: "left" },
+          { name: "🚜 Tractor", correct: "right" },
+          { name: "🏎️ Race Car", correct: "both" },
+          { name: "⚡ Lightning", correct: "left" },
+          { name: "✈️ Jet", correct: "both" },
+          { name: "🚤 Boat", correct: "right" },
+        ],
+        hint: "Race cars and jets are fast AND have engines!"
+      },
+      {
+        id: 30,
+        title: "Wear It vs. Soft",
+        leftLabel: "Wear It",
+        rightLabel: "Soft",
+        leftColor: "#3b82f6",
+        rightColor: "#ec4899",
+        items: [
+          { name: "⌚ Watch", correct: "left" },
+          { name: "☁️ Cloud", correct: "right" },
+          { name: "🧣 Scarf", correct: "both" },
+          { name: "👓 Glasses", correct: "left" },
+          { name: "🧤 Gloves", correct: "both" },
+          { name: "🧸 Teddy", correct: "right" },
+        ],
+        hint: "Scarves and gloves are worn AND soft!"
+      },
+      {
+        id: 31,
+        title: "Ocean vs. Blue",
+        leftLabel: "Ocean",
+        rightLabel: "Blue",
+        leftColor: "#06b6d4",
+        rightColor: "#3b82f6",
+        items: [
+          { name: "🦐 Shrimp", correct: "left" },
+          { name: "🫐 Blueberry", correct: "right" },
+          { name: "🐬 Dolphin", correct: "both" },
+          { name: "🐚 Shell", correct: "left" },
+          { name: "🐋 Whale", correct: "both" },
+          { name: "🧢 Blue Hat", correct: "right" },
+        ],
+        hint: "Dolphins and whales live in the ocean AND can be blue!"
+      },
+      {
+        id: 32,
+        title: "Has Buttons vs. Electronics",
+        leftLabel: "Buttons",
+        rightLabel: "Electronics",
+        leftColor: "#a855f7",
+        rightColor: "#6366f1",
+        items: [
+          { name: "👔 Shirt", correct: "left" },
+          { name: "💡 Light Bulb", correct: "right" },
+          { name: "🎮 Game Controller", correct: "both" },
+          { name: "🧥 Coat", correct: "left" },
+          { name: "📱 Phone", correct: "both" },
+          { name: "🔌 Plug", correct: "right" },
+        ],
+        hint: "Controllers and phones have buttons AND are electronics!"
+      },
+      {
+        id: 33,
+        title: "Melts vs. Food",
+        leftLabel: "Melts",
+        rightLabel: "Food",
+        leftColor: "#fbbf24",
+        rightColor: "#84cc16",
+        items: [
+          { name: "🕯️ Candle", correct: "left" },
+          { name: "🥕 Carrot", correct: "right" },
+          { name: "🍦 Ice Cream", correct: "both" },
+          { name: "❄️ Snowflake", correct: "left" },
+          { name: "🧀 Cheese", correct: "both" },
+          { name: "🍎 Apple", correct: "right" },
+        ],
+        hint: "Ice cream and cheese melt AND are food!"
+      },
+      {
+        id: 34,
+        title: "Farm Animals vs. Gives Food",
+        leftLabel: "Farm",
+        rightLabel: "Gives Food",
+        leftColor: "#a3734c",
+        rightColor: "#84cc16",
+        items: [
+          { name: "🐴 Horse", correct: "left" },
+          { name: "🌳 Apple Tree", correct: "right" },
+          { name: "🐄 Cow", correct: "both" },
+          { name: "🐕 Dog", correct: "left" },
+          { name: "🐔 Chicken", correct: "both" },
+          { name: "🐝 Bee", correct: "right" },
+        ],
+        hint: "Cows and chickens are farm animals that give us food!"
+      },
+      {
+        id: 35,
+        title: "Patterns vs. Clothes",
+        leftLabel: "Patterns",
+        rightLabel: "Clothes",
+        leftColor: "#f97316",
+        rightColor: "#3b82f6",
+        items: [
+          { name: "🦓 Zebra", correct: "left" },
+          { name: "🧢 Plain Hat", correct: "right" },
+          { name: "👔 Striped Shirt", correct: "both" },
+          { name: "🐆 Leopard", correct: "left" },
+          { name: "👗 Polka Dot Dress", correct: "both" },
+          { name: "👟 Sneakers", correct: "right" },
+        ],
+        hint: "Striped shirts and polka dot dresses have patterns AND are clothes!"
+      },
+      {
+        id: 36,
+        title: "Floats vs. Beach",
+        leftLabel: "Floats",
+        rightLabel: "Beach",
+        leftColor: "#06b6d4",
+        rightColor: "#fbbf24",
+        items: [
+          { name: "🎈 Balloon", correct: "left" },
+          { name: "🐚 Seashell", correct: "right" },
+          { name: "🏖️ Beach Ball", correct: "both" },
+          { name: "🪵 Log", correct: "left" },
+          { name: "🛟 Life Ring", correct: "both" },
+          { name: "🏄 Surfboard", correct: "right" },
+        ],
+        hint: "Beach balls and life rings float AND are at the beach!"
+      },
+      {
+        id: 37,
+        title: "Numbers vs. School",
+        leftLabel: "Numbers",
+        rightLabel: "School",
+        leftColor: "#ef4444",
+        rightColor: "#8b5cf6",
+        items: [
+          { name: "🎰 Slot Machine", correct: "left" },
+          { name: "📚 Book", correct: "right" },
+          { name: "📏 Ruler", correct: "both" },
+          { name: "⏰ Clock", correct: "left" },
+          { name: "🧮 Abacus", correct: "both" },
+          { name: "✏️ Pencil", correct: "right" },
+        ],
+        hint: "Rulers and abacuses have numbers AND are at school!"
+      },
+      {
+        id: 38,
+        title: "Spins vs. Wheels",
+        leftLabel: "Spins",
+        rightLabel: "Has Wheels",
+        leftColor: "#ec4899",
+        rightColor: "#64748b",
+        items: [
+          { name: "🎡 Ferris Wheel", correct: "both" },
+          { name: "🛒 Shopping Cart", correct: "right" },
+          { name: "🌪️ Tornado", correct: "left" },
+          { name: "🚲 Bicycle", correct: "both" },
+          { name: "🪀 Top", correct: "left" },
+          { name: "🛴 Scooter", correct: "right" },
+        ],
+        hint: "Ferris wheels and bicycles spin AND have wheels!"
+      },
+      {
+        id: 39,
+        title: "Night Animals vs. Wings",
+        leftLabel: "Night",
+        rightLabel: "Has Wings",
+        leftColor: "#6366f1",
+        rightColor: "#3b82f6",
+        items: [
+          { name: "🦉 Owl", correct: "both" },
+          { name: "🦋 Butterfly", correct: "right" },
+          { name: "🦔 Hedgehog", correct: "left" },
+          { name: "🦇 Bat", correct: "both" },
+          { name: "🌙 Moon", correct: "left" },
+          { name: "🐝 Bee", correct: "right" },
+        ],
+        hint: "Owls and bats come out at night AND have wings!"
+      },
+      {
+        id: 40,
+        title: "Wood vs. House",
+        leftLabel: "Made of Wood",
+        rightLabel: "In House",
+        leftColor: "#a3734c",
+        rightColor: "#f97316",
+        items: [
+          { name: "🌳 Tree", correct: "left" },
+          { name: "📺 TV", correct: "right" },
+          { name: "🪑 Chair", correct: "both" },
+          { name: "✏️ Pencil", correct: "left" },
+          { name: "🚪 Door", correct: "both" },
+          { name: "🛋️ Couch", correct: "right" },
+        ],
+        hint: "Chairs and doors are made of wood AND in houses!"
+      },
+
+      // LEVELS 41-50: CHALLENGING
+      {
+        id: 41,
+        title: "Needs Power vs. Toys",
+        leftLabel: "Needs Power",
+        rightLabel: "Toys",
+        leftColor: "#eab308",
+        rightColor: "#ec4899",
+        items: [
+          { name: "💡 Light", correct: "left" },
+          { name: "🧸 Stuffed Bear", correct: "right" },
+          { name: "🎮 Video Game", correct: "both" },
+          { name: "🔌 Outlet", correct: "left" },
+          { name: "🚁 RC Helicopter", correct: "both" },
+          { name: "🪁 Kite", correct: "right" },
+        ],
+        hint: "Video games and RC toys need power AND are toys!"
+      },
+      {
+        id: 42,
+        title: "Has Seeds vs. Tree Fruit",
+        leftLabel: "Has Seeds",
+        rightLabel: "From Trees",
+        leftColor: "#84cc16",
+        rightColor: "#22c55e",
+        items: [
+          { name: "🍓 Strawberry", correct: "left" },
+          { name: "🥥 Coconut", correct: "right" },
+          { name: "🍎 Apple", correct: "both" },
+          { name: "🌻 Sunflower", correct: "left" },
+          { name: "🍊 Orange", correct: "both" },
+          { name: "🍌 Banana", correct: "right" },
+        ],
+        hint: "Apples and oranges have seeds AND grow on trees!"
+      },
+      {
+        id: 43,
+        title: "Instruments vs. Wood",
+        leftLabel: "Instrument",
+        rightLabel: "Wood",
+        leftColor: "#f59e0b",
+        rightColor: "#a3734c",
+        items: [
+          { name: "🎺 Trumpet", correct: "left" },
+          { name: "🪵 Log", correct: "right" },
+          { name: "🎸 Guitar", correct: "both" },
+          { name: "🎹 Keyboard", correct: "left" },
+          { name: "🪘 Drum", correct: "both" },
+          { name: "📦 Box", correct: "right" },
+        ],
+        hint: "Guitars and drums are instruments made of wood!"
+      },
+      {
+        id: 44,
+        title: "Has Handle vs. Kitchen",
+        leftLabel: "Has Handle",
+        rightLabel: "Kitchen",
+        leftColor: "#64748b",
+        rightColor: "#f97316",
+        items: [
+          { name: "☂️ Umbrella", correct: "left" },
+          { name: "🧊 Ice", correct: "right" },
+          { name: "🍳 Pan", correct: "both" },
+          { name: "🚪 Door", correct: "left" },
+          { name: "☕ Mug", correct: "both" },
+          { name: "🍎 Apple", correct: "right" },
+        ],
+        hint: "Pans and mugs have handles AND are in kitchens!"
+      },
+      {
+        id: 45,
+        title: "Mammals vs. Fur",
+        leftLabel: "Mammals",
+        rightLabel: "Has Fur",
+        leftColor: "#ec4899",
+        rightColor: "#a3734c",
+        items: [
+          { name: "🐋 Whale", correct: "left" },
+          { name: "🧥 Fur Coat", correct: "right" },
+          { name: "🐻 Bear", correct: "both" },
+          { name: "🐬 Dolphin", correct: "left" },
+          { name: "🐱 Cat", correct: "both" },
+          { name: "🧸 Teddy Bear", correct: "right" },
+        ],
+        hint: "Bears and cats are mammals with fur!"
+      },
+      {
+        id: 46,
+        title: "Loud vs. Music",
+        leftLabel: "Loud",
+        rightLabel: "Music",
+        leftColor: "#ef4444",
+        rightColor: "#8b5cf6",
+        items: [
+          { name: "⚡ Thunder", correct: "left" },
+          { name: "🎵 Music Note", correct: "right" },
+          { name: "🥁 Drums", correct: "both" },
+          { name: "🚨 Siren", correct: "left" },
+          { name: "🎸 Electric Guitar", correct: "both" },
+          { name: "🎻 Violin", correct: "right" },
+        ],
+        hint: "Drums and electric guitars are loud AND make music!"
+      },
+      {
+        id: 47,
+        title: "Has Tail vs. Swims",
+        leftLabel: "Has Tail",
+        rightLabel: "Swims",
+        leftColor: "#f59e0b",
+        rightColor: "#06b6d4",
+        items: [
+          { name: "🐕 Dog", correct: "left" },
+          { name: "🏊 Swimmer", correct: "right" },
+          { name: "🦈 Shark", correct: "both" },
+          { name: "🐿️ Squirrel", correct: "left" },
+          { name: "🐬 Dolphin", correct: "both" },
+          { name: "🐢 Turtle", correct: "right" },
+        ],
+        hint: "Sharks and dolphins have tails AND swim!"
+      },
+      {
+        id: 48,
+        title: "Reading vs. Paper",
+        leftLabel: "You Read",
+        rightLabel: "Paper",
+        leftColor: "#3b82f6",
+        rightColor: "#fbbf24",
+        items: [
+          { name: "📺 TV Show", correct: "left" },
+          { name: "🧻 Toilet Paper", correct: "right" },
+          { name: "📰 Newspaper", correct: "both" },
+          { name: "📱 Text Message", correct: "left" },
+          { name: "📖 Book", correct: "both" },
+          { name: "✉️ Envelope", correct: "right" },
+        ],
+        hint: "Newspapers and books are read AND made of paper!"
+      },
+      {
+        id: 49,
+        title: "Gives Light vs. Hot",
+        leftLabel: "Gives Light",
+        rightLabel: "Hot",
+        leftColor: "#fbbf24",
+        rightColor: "#ef4444",
+        items: [
+          { name: "🌙 Moon", correct: "left" },
+          { name: "🌶️ Hot Pepper", correct: "right" },
+          { name: "☀️ Sun", correct: "both" },
+          { name: "💡 Light Bulb", correct: "left" },
+          { name: "🔥 Fire", correct: "both" },
+          { name: "🍵 Hot Cocoa", correct: "right" },
+        ],
+        hint: "The sun and fire give light AND are hot!"
+      },
+      {
+        id: 50,
+        title: "Has Legs vs. Furniture",
+        leftLabel: "Has Legs",
+        rightLabel: "Furniture",
+        leftColor: "#a855f7",
+        rightColor: "#f97316",
+        items: [
+          { name: "🐙 Octopus", correct: "left" },
+          { name: "🛋️ Couch", correct: "right" },
+          { name: "🪑 Chair", correct: "both" },
+          { name: "🕷️ Spider", correct: "left" },
+          { name: "🛏️ Bed", correct: "both" },
+          { name: "📦 Shelf", correct: "right" },
+        ],
+        hint: "Chairs and beds have legs AND are furniture!"
+      },
+    ];
+
+    function VennDiagramGame() {
+      const [currentLevel, setCurrentLevel] = useState(0);
+      const [unplacedItems, setUnplacedItems] = useState([]);
+      const [leftItems, setLeftItems] = useState([]);
+      const [rightItems, setRightItems] = useState([]);
+      const [bothItems, setBothItems] = useState([]);
+      const [selectedItem, setSelectedItem] = useState(null);
+      const [showSuccess, setShowSuccess] = useState(false);
+      const [showHint, setShowHint] = useState(false);
+      const [mistakes, setMistakes] = useState(0);
+      const [unlockedLevels, setUnlockedLevels] = useState(1);
+      const [showLevelSelect, setShowLevelSelect] = useState(false);
+      const [wrongFlash, setWrongFlash] = useState(null);
+
+      const level = levels[currentLevel];
+
+      useEffect(() => {
+        resetLevel();
+      }, [currentLevel]);
+
+      const resetLevel = () => {
+        const shuffled = [...level.items].sort(() => Math.random() - 0.5);
+        setUnplacedItems(shuffled);
+        setLeftItems([]);
+        setRightItems([]);
+        setBothItems([]);
+        setShowSuccess(false);
+        setShowHint(false);
+        setMistakes(0);
+        setSelectedItem(null);
+        setWrongFlash(null);
+      };
+
+      const handleItemTap = (item) => {
+        if (selectedItem?.name === item.name) {
+          setSelectedItem(null);
+        } else {
+          setSelectedItem(item);
+        }
+      };
+
+      const handleZoneTap = (zone) => {
+        if (!selectedItem) return;
+
+        const isCorrect = selectedItem.correct === zone || 
+          (zone === "both" && selectedItem.correct === "both");
+
+        if (isCorrect) {
+          setUnplacedItems(prev => prev.filter(i => i.name !== selectedItem.name));
+          
+          if (zone === "left") {
+            setLeftItems(prev => [...prev, selectedItem]);
+          } else if (zone === "right") {
+            setRightItems(prev => [...prev, selectedItem]);
+          } else {
+            setBothItems(prev => [...prev, selectedItem]);
+          }
+          setSelectedItem(null);
+        } else {
+          setMistakes(prev => prev + 1);
+          setWrongFlash(zone);
+          setTimeout(() => setWrongFlash(null), 500);
+          if (mistakes >= 1) {
+            setShowHint(true);
+          }
+        }
+      };
+
+      useEffect(() => {
+        if (unplacedItems.length === 0 && (leftItems.length > 0 || rightItems.length > 0 || bothItems.length > 0)) {
+          setShowSuccess(true);
+          if (currentLevel + 1 > unlockedLevels - 1) {
+            setUnlockedLevels(prev => Math.min(prev + 1, levels.length));
+          }
+        }
+      }, [unplacedItems, leftItems, rightItems, bothItems]);
+
+      const nextLevel = () => {
+        if (currentLevel < levels.length - 1) {
+          setCurrentLevel(prev => prev + 1);
+        }
+      };
+
+      const selectLevel = (levelIndex) => {
+        if (levelIndex < unlockedLevels) {
+          setCurrentLevel(levelIndex);
+          setShowLevelSelect(false);
+        }
+      };
+
+      const hasOverlap = level.items.some(item => item.correct === "both");
+
+      const getDifficulty = () => {
+        if (currentLevel < 10) return { label: "Easy", color: "#22c55e" };
+        if (currentLevel < 25) return { label: "Medium", color: "#f59e0b" };
+        if (currentLevel < 40) return { label: "Hard", color: "#ef4444" };
+        return { label: "Expert", color: "#8b5cf6" };
+      };
+
+      const difficulty = getDifficulty();
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(180deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%)',
+          padding: '20px',
+          fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
+        }}>
+          
+          {/* Header Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '24px',
+            padding: '20px',
+            marginBottom: '20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            textAlign: 'center',
+          }}>
+            <h1 style={{
+              color: '#7c3aed',
+              fontSize: 'clamp(1.4rem, 5vw, 2rem)',
+              margin: '0 0 8px 0',
+              fontWeight: '800',
+            }}>
+              🎯 Venn Diagram Fun!
+            </h1>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              flexWrap: 'wrap',
+              marginTop: '12px',
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '50px',
+                fontWeight: '700',
+                fontSize: 'clamp(0.85rem, 3vw, 1rem)',
+              }}>
+                Level {currentLevel + 1} / 50
+              </div>
+              <div style={{
+                background: difficulty.color,
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '50px',
+                fontWeight: '700',
+                fontSize: 'clamp(0.85rem, 3vw, 1rem)',
+              }}>
+                {difficulty.label}
+              </div>
+              <button
+                onClick={() => setShowLevelSelect(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '50px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  fontSize: 'clamp(0.85rem, 3vw, 1rem)',
+                  minHeight: '44px',
+                  color: '#78350f',
+                }}
+              >
+                📚 Levels
+              </button>
+            </div>
+            
+            <div style={{
+              marginTop: '12px',
+              background: '#f3f4f6',
+              color: '#374151',
+              padding: '10px 16px',
+              borderRadius: '12px',
+              fontWeight: '600',
+              fontSize: 'clamp(0.95rem, 3.5vw, 1.1rem)',
+            }}>
+              {level.title}
+            </div>
+          </div>
+
+          {/* Level Select Modal */}
+          {showLevelSelect && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '20px',
+            }}>
+              <div style={{
+                background: 'white',
+                borderRadius: '32px',
+                padding: '24px',
+                maxWidth: '420px',
+                width: '95%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+              }}>
+                <h2 style={{ 
+                  textAlign: 'center', 
+                  margin: '0 0 8px 0', 
+                  fontSize: '1.5rem',
+                  color: '#7c3aed',
+                  fontWeight: '800',
+                }}>
+                  🎮 Pick a Level!
+                </h2>
+                <p style={{ textAlign: 'center', margin: '0 0 16px 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                  {unlockedLevels} of 50 unlocked
+                </p>
+                
+                {/* Easy Levels */}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ background: '#22c55e', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>Easy</span>
+                    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>1-10</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                    {levels.slice(0, 10).map((lvl, index) => (
+                      <button
+                        key={lvl.id}
+                        onClick={() => selectLevel(index)}
+                        disabled={index >= unlockedLevels}
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: index < unlockedLevels ? 'pointer' : 'not-allowed',
+                          background: index < unlockedLevels 
+                            ? (index === currentLevel ? '#22c55e' : '#d1fae5')
+                            : '#e5e7eb',
+                          color: index < unlockedLevels 
+                            ? (index === currentLevel ? 'white' : '#166534')
+                            : '#9ca3af',
+                        }}
+                      >
+                        {index < unlockedLevels ? index + 1 : '🔒'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Medium Levels */}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ background: '#f59e0b', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>Medium</span>
+                    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>11-25</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                    {levels.slice(10, 25).map((lvl, index) => (
+                      <button
+                        key={lvl.id}
+                        onClick={() => selectLevel(index + 10)}
+                        disabled={index + 10 >= unlockedLevels}
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: index + 10 < unlockedLevels ? 'pointer' : 'not-allowed',
+                          background: index + 10 < unlockedLevels 
+                            ? (index + 10 === currentLevel ? '#f59e0b' : '#fef3c7')
+                            : '#e5e7eb',
+                          color: index + 10 < unlockedLevels 
+                            ? (index + 10 === currentLevel ? 'white' : '#92400e')
+                            : '#9ca3af',
+                        }}
+                      >
+                        {index + 10 < unlockedLevels ? index + 11 : '🔒'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hard Levels */}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>Hard</span>
+                    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>26-40</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                    {levels.slice(25, 40).map((lvl, index) => (
+                      <button
+                        key={lvl.id}
+                        onClick={() => selectLevel(index + 25)}
+                        disabled={index + 25 >= unlockedLevels}
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: index + 25 < unlockedLevels ? 'pointer' : 'not-allowed',
+                          background: index + 25 < unlockedLevels 
+                            ? (index + 25 === currentLevel ? '#ef4444' : '#fee2e2')
+                            : '#e5e7eb',
+                          color: index + 25 < unlockedLevels 
+                            ? (index + 25 === currentLevel ? 'white' : '#991b1b')
+                            : '#9ca3af',
+                        }}
+                      >
+                        {index + 25 < unlockedLevels ? index + 26 : '🔒'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Expert Levels */}
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ background: '#8b5cf6', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>Expert</span>
+                    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>41-50</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+                    {levels.slice(40, 50).map((lvl, index) => (
+                      <button
+                        key={lvl.id}
+                        onClick={() => selectLevel(index + 40)}
+                        disabled={index + 40 >= unlockedLevels}
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: '12px',
+                          border: 'none',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: index + 40 < unlockedLevels ? 'pointer' : 'not-allowed',
+                          background: index + 40 < unlockedLevels 
+                            ? (index + 40 === currentLevel ? '#8b5cf6' : '#ede9fe')
+                            : '#e5e7eb',
+                          color: index + 40 < unlockedLevels 
+                            ? (index + 40 === currentLevel ? 'white' : '#5b21b6')
+                            : '#9ca3af',
+                        }}
+                      >
+                        {index + 40 < unlockedLevels ? index + 41 : '🔒'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowLevelSelect(false)}
+                  style={{
+                    width: '100%',
+                    marginTop: '8px',
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '16px',
+                    fontSize: '1.1rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    minHeight: '50px',
+                  }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Success Modal */}
+          {showSuccess && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '20px',
+            }}>
+              <div style={{
+                background: 'linear-gradient(180deg, #fef3c7, #fde68a)',
+                borderRadius: '32px',
+                padding: '36px',
+                textAlign: 'center',
+                maxWidth: '90%',
+                width: '380px',
+                border: '4px solid #fbbf24',
+              }}>
+                <div style={{ fontSize: '4rem', marginBottom: '8px' }}>🎉</div>
+                <h2 style={{ 
+                  fontSize: '1.8rem', 
+                  margin: '0 0 8px 0',
+                  color: '#7c3aed',
+                  fontWeight: '800',
+                }}>
+                  Amazing!
+                </h2>
+                <p style={{ 
+                  fontSize: '1.2rem', 
+                  marginBottom: '24px',
+                  color: '#78350f',
+                  fontWeight: '600',
+                }}>
+                  Level {currentLevel + 1} Complete!
+                </p>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={resetLevel}
+                    style={{
+                      padding: '14px 24px',
+                      fontSize: '1rem',
+                      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '16px',
+                      cursor: 'pointer',
+                      minHeight: '50px',
+                      fontWeight: '700',
+                    }}
+                  >
+                    🔄 Replay
+                  </button>
+                  {currentLevel < levels.length - 1 && (
+                    <button
+                      onClick={nextLevel}
+                      style={{
+                        padding: '14px 24px',
+                        fontSize: '1rem',
+                        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '16px',
+                        cursor: 'pointer',
+                        minHeight: '50px',
+                        fontWeight: '700',
+                      }}
+                    >
+                      Next ➡️
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Hint Box */}
+          {showHint && (
+            <div style={{
+              background: 'white',
+              border: '3px solid #fbbf24',
+              borderRadius: '20px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontSize: 'clamp(1rem, 3.5vw, 1.15rem)',
+              color: '#78350f',
+            }}>
+              <span style={{ fontWeight: '700' }}>💡 Hint:</span> {level.hint}
+            </div>
+          )}
+
+          {/* Items to Sort Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '24px',
+            padding: '20px',
+            marginBottom: '20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          }}>
+            <p style={{
+              margin: '0 0 16px 0',
+              textAlign: 'center',
+              fontSize: 'clamp(1.05rem, 4vw, 1.2rem)',
+              color: selectedItem ? '#f59e0b' : '#6b7280',
+              fontWeight: '700',
+            }}>
+              {selectedItem ? '👇 Tap where it belongs!' : '👆 Tap to pick up!'}
+            </p>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              justifyContent: 'center',
+              minHeight: '56px',
+            }}>
+              {unplacedItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleItemTap(item)}
+                  style={{
+                    background: selectedItem?.name === item.name 
+                      ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' 
+                      : '#f3f4f6',
+                    padding: '12px 18px',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    fontSize: 'clamp(1rem, 4vw, 1.2rem)',
+                    border: selectedItem?.name === item.name 
+                      ? '3px solid #d97706' 
+                      : '3px solid transparent',
+                    fontWeight: '600',
+                    color: selectedItem?.name === item.name ? '#78350f' : '#374151',
+                    boxShadow: selectedItem?.name === item.name 
+                      ? '0 8px 20px rgba(251, 191, 36, 0.4)' 
+                      : '0 2px 8px rgba(0,0,0,0.05)',
+                    transform: selectedItem?.name === item.name ? 'scale(1.08)' : 'scale(1)',
+                    transition: 'all 0.2s ease',
+                    minHeight: '50px',
+                  }}
+                >
+                  {item.name}
+                </button>
+              ))}
+              {unplacedItems.length === 0 && (
+                <div style={{ 
+                  color: '#22c55e', 
+                  fontWeight: '700', 
+                  fontSize: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <span style={{ fontSize: '1.5rem' }}>✅</span> All done!
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Venn Diagram */}
+          <div style={{
+            position: 'relative',
+            height: hasOverlap ? '320px' : '280px',
+            maxWidth: '500px',
+            margin: '0 auto 20px auto',
+          }}>
+            {/* Left Circle */}
+            <div
+              onClick={() => handleZoneTap('left')}
+              style={{
+                position: 'absolute',
+                left: hasOverlap ? '0' : '5%',
+                top: '10px',
+                width: hasOverlap ? '64%' : '44%',
+                height: hasOverlap ? '280px' : '240px',
+                borderRadius: '50%',
+                background: wrongFlash === 'left' 
+                  ? 'rgba(239, 68, 68, 0.4)' 
+                  : level.leftColor + '25',
+                border: '5px solid ' + level.leftColor,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                paddingTop: '18px',
+                cursor: selectedItem ? 'pointer' : 'default',
+                transition: 'all 0.25s ease',
+                boxShadow: selectedItem ? '0 0 0 4px ' + level.leftColor + '40' : 'none',
+              }}
+            >
+              <div style={{
+                background: level.leftColor,
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '50px',
+                fontWeight: '800',
+                marginBottom: '10px',
+                fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)',
+                textAlign: 'center',
+              }}>
+                {level.leftLabel}
+              </div>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                justifyContent: 'center',
+                padding: '0 20px',
+                maxWidth: hasOverlap ? '50%' : '85%',
+              }}>
+                {leftItems.map((item, i) => (
+                  <span key={i} style={{
+                    background: 'white',
+                    padding: '6px 10px',
+                    borderRadius: '10px',
+                    fontSize: 'clamp(0.8rem, 2.8vw, 0.95rem)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}>
+                    {item.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Circle */}
+            <div
+              onClick={() => handleZoneTap('right')}
+              style={{
+                position: 'absolute',
+                right: hasOverlap ? '0' : '5%',
+                top: '10px',
+                width: hasOverlap ? '64%' : '44%',
+                height: hasOverlap ? '280px' : '240px',
+                borderRadius: '50%',
+                background: wrongFlash === 'right' 
+                  ? 'rgba(239, 68, 68, 0.4)' 
+                  : level.rightColor + '25',
+                border: '5px solid ' + level.rightColor,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                paddingTop: '18px',
+                cursor: selectedItem ? 'pointer' : 'default',
+                transition: 'all 0.25s ease',
+                boxShadow: selectedItem ? '0 0 0 4px ' + level.rightColor + '40' : 'none',
+              }}
+            >
+              <div style={{
+                background: level.rightColor,
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '50px',
+                fontWeight: '800',
+                marginBottom: '10px',
+                fontSize: 'clamp(0.9rem, 3.5vw, 1.1rem)',
+                textAlign: 'center',
+              }}>
+                {level.rightLabel}
+              </div>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                justifyContent: 'center',
+                padding: '0 20px',
+                maxWidth: hasOverlap ? '50%' : '85%',
+                marginLeft: hasOverlap ? 'auto' : '0',
+              }}>
+                {rightItems.map((item, i) => (
+                  <span key={i} style={{
+                    background: 'white',
+                    padding: '6px 10px',
+                    borderRadius: '10px',
+                    fontSize: 'clamp(0.8rem, 2.8vw, 0.95rem)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}>
+                    {item.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle (Both) Zone */}
+            {hasOverlap && (
+              <div
+                onClick={() => handleZoneTap('both')}
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '110px',
+                  minHeight: '130px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  paddingTop: '10px',
+                  cursor: selectedItem ? 'pointer' : 'default',
+                  zIndex: 10,
+                  background: wrongFlash === 'both' ? 'rgba(239, 68, 68, 0.4)' : 'transparent',
+                  borderRadius: '24px',
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <div style={{
+                  background: 'linear-gradient(135deg, ' + level.leftColor + ', ' + level.rightColor + ')',
+                  color: 'white',
+                  padding: '8px 14px',
+                  borderRadius: '50px',
+                  fontWeight: '800',
+                  fontSize: 'clamp(0.85rem, 2.8vw, 0.95rem)',
+                  marginBottom: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                }}>
+                  BOTH!
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '6px', 
+                  alignItems: 'center' 
+                }}>
+                  {bothItems.map((item, i) => (
+                    <span key={i} style={{
+                      background: 'white',
+                      padding: '6px 10px',
+                      borderRadius: '10px',
+                      fontSize: 'clamp(0.75rem, 2.5vw, 0.9rem)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      fontWeight: '600',
+                      color: '#374151',
+                    }}>
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div style={{ textAlign: 'center', padding: '0 10px' }}>
+            <p style={{ 
+              fontSize: 'clamp(0.95rem, 3.5vw, 1.1rem)', 
+              margin: '0 0 16px 0',
+              color: '#78350f',
+              fontWeight: '600',
+              background: 'rgba(255,255,255,0.7)',
+              padding: '12px 20px',
+              borderRadius: '16px',
+              display: 'inline-block',
+            }}>
+              {hasOverlap 
+                ? '🤔 Some go in BOTH circles!'
+                : '🎯 Sort each one!'
+              }
+            </p>
+            <div>
+              <button
+                onClick={resetLevel}
+                style={{
+                  padding: '12px 24px',
+                  background: 'white',
+                  color: '#7c3aed',
+                  border: '3px solid #7c3aed',
+                  borderRadius: '16px',
+                  cursor: 'pointer',
+                  fontSize: 'clamp(0.95rem, 3.5vw, 1.05rem)',
+                  minHeight: '50px',
+                  fontWeight: '700',
+                }}
+              >
+                🔄 Start Over
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<VennDiagramGame />, document.getElementById('root'));
+  </script>
+</body>
+</html>
